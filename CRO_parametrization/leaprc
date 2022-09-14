@@ -1,0 +1,3 @@
+loadAmberPrep cro.prepin
+saveMol2 CRO cro.mol2 1
+quit
