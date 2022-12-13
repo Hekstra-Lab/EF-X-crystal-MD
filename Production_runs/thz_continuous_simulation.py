@@ -27,7 +27,7 @@ parser.add_argument("-e", "--epoch_offset", type=int, help="The epoch to start f
 args = parser.parse_args()
 
 def get_file_path(file):
-    root = '/n/hekstra_lab/people/ziyuan'
+    root = '/n/holyscratch01/hekstra_lab/ziyuan/EF-X-crystal-MD/Production_runs'
     for (root, dirs, files) in os.walk(root):
         if file in files:
             return os.path.join(root, file)
