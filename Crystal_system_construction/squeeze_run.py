@@ -13,7 +13,7 @@ import pickle
 forcefield = ForceField('amber/ff14SB.xml', 
                         'amber/tip3p_standard.xml',
                         'amber/tip3p_HFE_multivalent.xml',
-                        '../CRO_parametrization/cro.xml')
+                        'cro.xml')
 acetate = Molecule.from_smiles('CC(=O)[O-]')
 gaff = GAFFTemplateGenerator(molecules=acetate)
 forcefield.registerTemplateGenerator(gaff.generator)
@@ -26,5 +26,5 @@ mdsystem = mdtools.LatticeMDSystem(crystal.topology,
 
 mdsystem.buildSimulation()
 print("System initialized for squeezing. Currently running on platform ", mdsystem.simulation.context.getPlatform().getName())
-mdsystem.squeeze(tolerance=0.0005, maxIterations=20, dt=0.002*picoseconds, initial_water_perturb=1160)
+mdsystem.squeeze(tolerance=0.0005, maxIterations=20, dt=0.002*picoseconds, initial_water_perturb=1000, dn=500)
 mdsystem.save("squeezed.pdb")
