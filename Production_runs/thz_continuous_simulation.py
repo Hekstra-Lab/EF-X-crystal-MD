@@ -1,4 +1,5 @@
 from openmm.app import PDBFile, ForceField
+from openff.toolkit.topology import Molecule
 from openmmforcefields.generators import GAFFTemplateGenerator
 from simtk.unit import *
 from tqdm import tqdm
@@ -24,10 +25,11 @@ parser.add_argument("-i", "--input", type=str, help="Input file for the crystal 
 parser.add_argument("-o", "--output", type=str, help="Prefix for the output trajectory and state files")
 parser.add_argument("-n", "--n_chains", type=int, help="Number of protein chains in the system", default=4)
 parser.add_argument("-e", "--epoch_offset", type=int, help="The epoch to start from", default=0)
+parser.add_argument("-r", "--replicate", type=int, help="Index number of the current replicate")
 args = parser.parse_args()
 
 def get_file_path(file):
-    root = '/n/holyscratch01/hekstra_lab/ziyuan/EF-X-crystal-MD/Production_runs'
+    root = f'/n/holyscratch01/hekstra_lab/ziyuan/EF-X-crystal-MD/Production_runs/{args.replicate}'
     for (root, dirs, files) in os.walk(root):
         if file in files:
             return os.path.join(root, file)
@@ -38,10 +40,15 @@ forcefield = ForceField('amber/ff14SB.xml',
                         'amber/tip3p_standard.xml',
                         'amber/tip3p_HFE_multivalent.xml',
                         get_file_path('cro.xml'))
+acetate = Molecule.from_smiles('CC(=O)[O-]')
+gaff = GAFFTemplateGenerator(molecules=acetate)
+forcefield.registerTemplateGenerator(gaff.generator)
+
 efx = getFieldStrength(args.E * volts/meters)
 print("Field strength is", efx)
 
 crystal = PDBFile(get_file_path(args.input))
+print("Crystal structure retrieved from", get_file_path(args.input))
 mdsystem = mdtools.LatticeMDSystem(crystal.topology,
                                    crystal.positions,
                                    forcefield, "P 21 21 21")

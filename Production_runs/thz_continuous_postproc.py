@@ -23,13 +23,14 @@ parser.add_argument("-i", "--input", type=str, help="Input file for the crystal 
 parser.add_argument("-o", "--output", type=str, help="Prefix for the output trajectory and state files")
 parser.add_argument("-n", "--n_chains", type=int, help="Number of protein chains in the system", default=4)
 parser.add_argument("-e", "--epoch_offset", type=int, help="The epoch to start from", default=0)
+parser.add_argument("-r", "--replicate", type=int, help="Index number of the current replicate")
 args = parser.parse_args()
 
 def get_file_path(file):
-    root = '/n/holyscratch01/hekstra_lab/ziyuan/EF-X-crystal-MD/Production_runs'
-    for (root, dirs, files) in os.walk(root):
-        if file in files:
-            return os.path.join(root, file)
+	root = f'/n/holyscratch01/hekstra_lab/ziyuan/EF-X-crystal-MD/Production_runs/{args.replicate}'
+	for (root, dirs, files) in os.walk(root):
+		if file in files:
+			return os.path.join(root, file)
 
 def aux(epoch, phase, k):
     fname = args.output+f'_epoch_{epoch}_chainwise_{phase}_subtraj_{k}'
@@ -40,8 +41,10 @@ def aux(epoch, phase, k):
     average_structure_factors(fname, max_frame=args.n_pulses)
 
 asu_ref = mdtraj.load(get_file_path('asu_ref.h5'))
-unitcell_ref = mdtraj.load(get_file_path('unitcell_ref.h5'))
+# unitcell_ref = mdtraj.load(get_file_path('unitcell_ref.h5'))
 atom_selection = np.load(get_file_path('atoms_for_alignment.npy'))
+print("ASU reference retrieved from", get_file_path('asu_ref.h5'))
+print("Atom selection retrieved from", get_file_path('atoms_for_alignment.npy'))
 print("Loaded auxiliary data files.")
 
 while True:
@@ -55,7 +58,7 @@ while True:
         offset, phase = tupl
         fname=args.output+f'_epoch_{epoch}_chainwise_{phase}'
         align_and_split_by_chain(traj[offset::100], fname,
-                                unitcell_ref=unitcell_ref, asu_ref=asu_ref,
+                                unitcell_ref=None, asu_ref=asu_ref,
                                 sg=19, chainwise_alignment=True,
                                 atom_selection=atom_selection)
 
